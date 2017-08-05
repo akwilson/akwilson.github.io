@@ -6,15 +6,16 @@
 	</head>
 	
 	<body>
-		<form>
-			<fieldset>
-				<legend>Parameters</legend>
-				<label>Interval</label>
-				<input type="text" value="250"></input>
-				<label>Grid Size</label>
-				<input type="text" value="800"></input>
-			</fieldset>
-		</form>
+		<fieldset>
+			<legend>Parameters</legend>
+			<label>Interval (ms)</label>
+			<input id="interval" type="text" value="500"></input>
+			<label>Tiles Across</label>
+			<input id="gwidth" type="text" value="50"></input>
+			<label>Tiles Down</label>
+			<input id="gheight" type="text" value="35"></input>
+			<button onclick="redrawGrid()">Redraw</button>
+		</fieldset>
 		<br>
 		<button onclick="start()">Start</button>
 		<button onclick="stop()">Stop</button>
@@ -30,17 +31,22 @@
 	</body>
 	
 	<script>
-		function buildGrid(grid_size, tile_size) {
-			var rv = new Array(grid_size);
+		var TILE_SIZE = 15;
+		
+		function buildGrid(height, width) {
+			var rv = new Array(height);
 			var svg = document.getElementById('grid');
-			for (var i = 0; i < grid_size; i++) {
-				rv[i] = new Array(grid_size);
-				for (var j = 0; j < grid_size; j++) {
+			svg.setAttribute('width', width * TILE_SIZE);
+			svg.setAttribute('height', height * TILE_SIZE);
+			
+			for (var i = 0; i < height; i++) {
+				rv[i] = new Array(width);
+				for (var j = 0; j < width; j++) {
 					var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
-					newElement.setAttribute('width', tile_size);
-					newElement.setAttribute('height', tile_size);
-					newElement.setAttribute('x', j * tile_size);
-					newElement.setAttribute('y', i * tile_size);
+					newElement.setAttribute('width', TILE_SIZE);
+					newElement.setAttribute('height', TILE_SIZE);
+					newElement.setAttribute('x', j * TILE_SIZE);
+					newElement.setAttribute('y', i * TILE_SIZE);
 					newElement.setAttribute('class', 'r_off');
 					newElement.addEventListener('click', function () {
 						switchTile(this);
@@ -54,14 +60,12 @@
 		}
 		
 		function isLive(element) {
-			if (element == null) {
-				console.log('here');
-			}
 			return element.getAttribute('class') == 'r_on';
 		}
 		
-		function liveNeighbours(grid, row, col, gridSize) {
-			var gs = gridSize - 1;
+		function liveNeighbours(grid, row, col) {
+			var gh = grid.length - 1;
+			var gw = grid[0].length - 1;
 			var ln = 0;
 			// top-left
 			if (row > 0 && col > 0 && isLive(grid[row - 1][col - 1])) {
@@ -74,7 +78,7 @@
 			}
 			
 			// top-right
-			if (row > 0 && col < gs && isLive(grid[row - 1][col + 1])) {
+			if (row > 0 && col < gw && isLive(grid[row - 1][col + 1])) {
 				ln++;
 			}
 			
@@ -84,33 +88,33 @@
 			}
 			
 			// right
-			if (col < gs && isLive(grid[row][col + 1])) {
+			if (col < gw && isLive(grid[row][col + 1])) {
 				ln++;
 			}
 			
 			// bottom-left
-			if (row < gs && col > 0 && isLive(grid[row + 1][col - 1])) {
+			if (row < gh && col > 0 && isLive(grid[row + 1][col - 1])) {
 				ln++;
 			}
 			
 			// below
-			if (row < gs && isLive(grid[row + 1][col])) {
+			if (row < gh && isLive(grid[row + 1][col])) {
 				ln++;
 			}
 			
 			// bottom-right
-			if (row < gs && col < gs && isLive(grid[row + 1][col + 1])) {
+			if (row < gh && col < gw && isLive(grid[row + 1][col + 1])) {
 				ln++;
 			}
 			
 			return ln;
 		}
 		
-		function applyRules(grid, gridSize) {
+		function applyRules(grid) {
 			var switchList = [];
-			for (i = 0; i < gridSize; i++) {
-				for (j = 0; j < gridSize; j++) {
-					var ln = liveNeighbours(grid, i, j, gridSize);
+			for (i = 0; i < grid.length; i++) {
+				for (j = 0; j < grid[i].length; j++) {
+					var ln = liveNeighbours(grid, i, j);
 					var curEl = grid[i][j];
 					if (isLive(curEl)) {
 						if (ln < 2 || ln > 3) {
@@ -140,13 +144,15 @@
 			}
 		}
 		
-		var grid = buildGrid(50, 15);
+		var grid = null;
 		var token = null;
+		redrawGrid();
 		
 		function start() {
+			var inter = document.getElementById('interval').value;
 			token = window.setInterval(function () {
-				switchTiles(applyRules(grid, 50));
-			}, 1500);
+				switchTiles(applyRules(grid));
+			}, inter);
 		}
 		
 		function stop() {
@@ -154,6 +160,12 @@
 				window.clearInterval(token);
 				token = null;
 			}
+		}
+		
+		function redrawGrid() {
+			var gridHeight = document.getElementById('gheight').value;
+			var gridWidth = document.getElementById('gwidth').value;
+			grid = buildGrid(gridHeight, gridWidth);
 		}
 	</script>
 </html>
