@@ -3,31 +3,48 @@
 	<head>
 		<meta charset="UTF-8" />
 		<title>Conway's Game of Life</title>
+		<style type="text/css" >
+			body { font-family:calibri;}
+			button { width:80px;}
+			h3 { margin: 10px 0px 10px 0px; }
+			#gdiv { margin: 5px 0px 0px 0px; }
+			.row2 { margin:10px 0px 0px 0px;}
+			.block { display:inline-block; width:90px;}
+			.block2 { display:inline-block; width:82px; margin:0px 0px 0px 10px; }
+			.bc2 { margin:0px 0px 0px 10px; }
+		</style>
 	</head>
 	
 	<body>
+		<h3>Conway's Game of Life</h3>
 		<fieldset>
 			<legend>Parameters</legend>
-			<label>Interval (ms)</label>
-			<input id="interval" type="text" value="500"></input>
-			<label>Tiles Across</label>
-			<input id="gwidth" type="text" value="50"></input>
-			<label>Tiles Down</label>
-			<input id="gheight" type="text" value="35"></input>
-			<button onclick="redrawGrid()">Redraw</button>
+			<div>
+				<label class="block">Grid Width</label>
+				<input id="gwidth" type="text" value="60"></input>
+				<label class="block2">Grid Height</label>
+				<input id="gheight" type="text" value="40"></input>
+				<button class="bc2" onclick="redrawGrid()">Redraw</button>
+			</div>
+			<div class="row2">
+				<label class="block">Interval (ms)</label>
+				<input id="interval" type="text" value="500"></input>
+				<button id="bstrt" class="bc2" onclick="start()">Start</button>
+				<button id="bstop" onclick="stop()" disabled="true">Stop</button>
+			</div>
 		</fieldset>
-		<br>
-		<button onclick="start()">Start</button>
-		<button onclick="stop()">Stop</button>
-		<p>
-		<svg id="grid" width="800" height="800" xmlns="http://www.w3.org/2000/svg">
-			<style type="text/css" >
-				<![CDATA[
-					rect.r_off { fill:#008d46; stroke-width:1; stroke:#3080d0; }
-					rect.r_on { fill:#3080d0; stroke-width:1; stroke:#3080d0; }
-				]]>
-			</style>
-		</svg>
+		<a href="https://en.wikipedia.org/wiki/Conway's_Game_of_Life">What is this?<a>
+		<div id="gdiv">
+			<svg id="grid" xmlns="http://www.w3.org/2000/svg">
+				<style type="text/css" >
+					<![CDATA[
+						rect.r_off { fill:#008d46; stroke-width:1; stroke:#3080d0; }
+						rect.r_on { fill:#3080d0; stroke-width:1; stroke:#3080d0; }
+					]]>
+				</style>
+			</svg>
+		</div>
+		<div>Generation: <span id="genCount">0</span></div>
 	</body>
 	
 	<script>
@@ -142,6 +159,8 @@
 			for (i = 0; i < size; i++) {
 				switchTile(switchList[i]);
 			}
+			
+			document.getElementById("genCount").textContent++;
 		}
 		
 		var grid = null;
@@ -149,6 +168,9 @@
 		redrawGrid();
 		
 		function start() {
+			document.getElementById("bstrt").disabled = true;
+			document.getElementById("bstop").disabled = false;
+			
 			var inter = document.getElementById('interval').value;
 			token = window.setInterval(function () {
 				switchTiles(applyRules(grid));
@@ -156,6 +178,9 @@
 		}
 		
 		function stop() {
+			document.getElementById("bstrt").disabled = false;
+			document.getElementById("bstop").disabled = true;
+			
 			if (token != null) {
 				window.clearInterval(token);
 				token = null;
@@ -163,6 +188,7 @@
 		}
 		
 		function redrawGrid() {
+			stop();
 			var gridHeight = document.getElementById('gheight').value;
 			var gridWidth = document.getElementById('gwidth').value;
 			grid = buildGrid(gridHeight, gridWidth);
