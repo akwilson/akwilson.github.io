@@ -50,6 +50,13 @@
 	<script>
 		var TILE_SIZE = 15;
 		
+		/**
+		 * Draw the grid on screen and build the grid array.
+		 * 
+		 * @param height the required number of tiles high
+		 * @param width  the required number of tiles wide
+		 * @returns      a 2x2 array with the {@code rect} elements created
+		 */
 		function buildGrid(height, width) {
 			var rv = new Array(height);
 			var svg = document.getElementById('grid');
@@ -80,6 +87,9 @@
 			return element.getAttribute('class') == 'r_on';
 		}
 		
+		/**
+		 * Counts the number of live tiles surrounding the requested tile.
+		 */
 		function liveNeighbours(grid, row, col) {
 			var gh = grid.length - 1;
 			var gw = grid[0].length - 1;
@@ -127,6 +137,11 @@
 			return ln;
 		}
 		
+		/**
+		 * Applies the four GoL rules to each tile in the grid turn.
+		 * 
+		 * @returns an array with all of the tiles needed to be switched value
+		 */
 		function applyRules(grid) {
 			var switchList = [];
 			for (i = 0; i < grid.length; i++) {
@@ -154,6 +169,9 @@
 			}
 		}
 		
+		/**
+		 * Takes an array of tiles and toggles the live status of each.
+		 */
 		function switchTiles(switchList) {
 			var size = switchList.length;
 			for (i = 0; i < size; i++) {
@@ -189,6 +207,7 @@
 		
 		function redrawGrid() {
 			stop();
+			document.getElementById("genCount").textContent = 0;
 			var gridHeight = document.getElementById('gheight').value;
 			var gridWidth = document.getElementById('gwidth').value;
 			grid = buildGrid(gridHeight, gridWidth);
