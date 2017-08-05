@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>Conway's Game of Life</title>
+	</head>
+	
+	<body>
+		<form>
+			<fieldset>
+				<legend>Parameters</legend>
+				<label>Interval</label>
+				<input type="text" value="250"></input>
+				<label>Grid Size</label>
+				<input type="text" value="800"></input>
+			</fieldset>
+		</form>
+		<br>
+		<button onclick="start()">Start</button>
+		<button onclick="stop()">Stop</button>
+		<p>
+		<svg id="grid" width="800" height="800" xmlns="http://www.w3.org/2000/svg">
+			<style type="text/css" >
+				<![CDATA[
+					rect.r_off { fill:#008d46; stroke-width:1; stroke:#3080d0; }
+					rect.r_on { fill:#3080d0; stroke-width:1; stroke:#3080d0; }
+				]]>
+			</style>
+		</svg>
+	</body>
+	
+	<script>
+		function buildGrid(grid_size, tile_size) {
+			var rv = new Array(grid_size);
+			var svg = document.getElementById('grid');
+			for (var i = 0; i < grid_size; i++) {
+				rv[i] = new Array(grid_size);
+				for (var j = 0; j < grid_size; j++) {
+					var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
+					newElement.setAttribute('width', tile_size);
+					newElement.setAttribute('height', tile_size);
+					newElement.setAttribute('x', j * tile_size);
+					newElement.setAttribute('y', i * tile_size);
+					newElement.setAttribute('class', 'r_off');
+					newElement.addEventListener('click', function () {
+						switchTile(this);
+					});
+					svg.appendChild(newElement);
+					rv[i][j] = newElement;
+				}
+			}
+			
+			return rv;
+		}
+		
+		function isLive(element) {
+			if (element == null) {
+				console.log('here');
+			}
+			return element.getAttribute('class') == 'r_on';
+		}
+		
+		function liveNeighbours(grid, row, col, gridSize) {
+			var gs = gridSize - 1;
+			var ln = 0;
+			// top-left
+			if (row > 0 && col > 0 && isLive(grid[row - 1][col - 1])) {
+				ln++;
+			}
+			
+			// above
+			if (row > 0 && isLive(grid[row - 1][col])) {
+				ln++;
+			}
+			
+			// top-right
+			if (row > 0 && col < gs && isLive(grid[row - 1][col + 1])) {
+				ln++;
+			}
+			
+			// left
+			if (col > 0 && isLive(grid[row][col - 1])) {
+				ln++;
+			}
+			
+			// right
+			if (col < gs && isLive(grid[row][col + 1])) {
+				ln++;
+			}
+			
+			// bottom-left
+			if (row < gs && col > 0 && isLive(grid[row + 1][col - 1])) {
+				ln++;
+			}
+			
+			// below
+			if (row < gs && isLive(grid[row + 1][col])) {
+				ln++;
+			}
+			
+			// bottom-right
+			if (row < gs && col < gs && isLive(grid[row + 1][col + 1])) {
+				ln++;
+			}
+			
+			return ln;
+		}
+		
+		function applyRules(grid, gridSize) {
+			var switchList = [];
+			for (i = 0; i < gridSize; i++) {
+				for (j = 0; j < gridSize; j++) {
+					var ln = liveNeighbours(grid, i, j, gridSize);
+					var curEl = grid[i][j];
+					if (isLive(curEl)) {
+						if (ln < 2 || ln > 3) {
+							switchList.push(curEl);
+						}
+					} else if (ln == 3) {
+						switchList.push(curEl);
+					}
+				}
+			}
+			
+			return switchList;
+		}
+		
+		function switchTile(tile) {
+			if (isLive(tile)) {
+				tile.setAttribute('class', 'r_off');
+			} else {
+				tile.setAttribute('class', 'r_on');
+			}
+		}
+		
+		function switchTiles(switchList) {
+			var size = switchList.length;
+			for (i = 0; i < size; i++) {
+				switchTile(switchList[i]);
+			}
+		}
+		
+		var grid = buildGrid(50, 15);
+		var token = null;
+		
+		function start() {
+			token = window.setInterval(function () {
+				switchTiles(applyRules(grid, 50));
+			}, 1500);
+		}
+		
+		function stop() {
+			if (token != null) {
+				window.clearInterval(token);
+				token = null;
+			}
+		}
+	</script>
+</html>
