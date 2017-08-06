@@ -8,6 +8,7 @@
             button { width:80px;}
             h3 { margin: 10px 0px 10px 0px; }
             #gdiv { margin: 5px 0px 0px 0px; }
+            #exLab { margin: 0px 0px 0px 10px; }
             .row2 { margin:10px 0px 0px 0px;}
             .block { display:inline-block; width:90px;}
             .block2 { display:inline-block; width:82px; margin:0px 0px 0px 10px; }
@@ -24,6 +25,10 @@
                 <input id="gwidth" type="text" value="60"></input>
                 <label class="block2">Grid Height</label>
                 <input id="gheight" type="text" value="40"></input>
+                <label id="exLab">Examples</label>
+                <select id="examples">
+                    <option></option>
+                </select>
                 <button class="bc2" onclick="redrawGrid()">Redraw</button>
             </div>
             <div class="row2">
@@ -35,7 +40,7 @@
         </fieldset>
         <a href="https://en.wikipedia.org/wiki/Conway's_Game_of_Life">What is this?<a>
         <div id="gdiv">
-            <svg id="grid" xmlns="http://www.w3.org/2000/svg">
+            <svg id="grid" alt="SVG not supported by your browser" xmlns="http://www.w3.org/2000/svg">
                 <style type="text/css" >
                     <![CDATA[
                         rect.r_off { fill:#008d46; stroke-width:1; stroke:#3080d0; }
@@ -159,10 +164,52 @@
             
             document.getElementById("genCount").textContent++;
         }
+
+        function drawExample(tileList) {
+            for (var i = 0; i < tileList.length; i++) {
+                var tile = tileList[i];
+                switchTile(grid[tile[0]][tile[1]]);
+            }
+        }
+
+        function exportGrid() {
+            for (i = 0; i < grid.length; i++) {
+                for (j = 0; j < grid[i].length; j++) {
+                    if (isLive(grid[i][j])) {
+                        console.log('[' + i + ', ' + j + ']');
+                    }
+                }
+            }
+        }
+
+        /**
+          * Loads a JSON file from the webserver.
+          */
+        function loadJSON(callback) {
+            var xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/json");
+            xobj.open('GET', 'examples.json', true);
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    callback(xobj.responseText);
+                }
+            };
+
+            xobj.send(null); 
+        }
         
         var grid = null;
         var token = null;
-        redrawGrid();
+        var examples = null;
+        loadJSON(function(response) {
+            examples = JSON.parse(response);
+            var dd = document.getElementById('examples');
+            for (var k in examples) {
+                dd.options[dd.options.length] = new Option(k, k);
+            }
+
+            redrawGrid();
+        });
         
         function start() {
             document.getElementById("bstrt").disabled = true;
@@ -190,6 +237,10 @@
             var gridHeight = document.getElementById('gheight').value;
             var gridWidth = document.getElementById('gwidth').value;
             grid = buildGrid(gridHeight, gridWidth);
+            var dd = document.getElementById('examples');
+            if (dd.selectedIndex > 0) {
+                drawExample(examples[dd.options[dd.selectedIndex].text]);
+            }
         }
     </script>
 </html>
